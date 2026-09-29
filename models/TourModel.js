@@ -78,6 +78,30 @@ const tourSchema = new mongoose.Schema({
         default: Date.now(),
         select: false
     },
+    startLocation: {
+        //GroJSON
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: [Number],
+        address: String,
+        description: String
+    },
+    locations: [
+        {
+            type: {
+                type: String,
+                enum: ['Point'],
+                default: 'Point'
+            },
+            coordinates: [Number],
+            address: String,
+            description: String,
+            day: Number
+        }
+    ]
 });
 
 

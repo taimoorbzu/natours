@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 dotenv.config({ path: `${__dirname}/../.env` });
 
-const toursData = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8'));
+const toursData = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours.json`, 'utf-8'));
 
 const DB = process.env.MONGO_URI;
 
