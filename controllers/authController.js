@@ -17,13 +17,26 @@ const signToken = (id) => {
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
+  //Set the cookie option
+  const cookieOptions = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    sameSite: "strict"
+  };
+
+  // Only send over HTTPS in production
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+  }
+
+  res.cookie('jwt', token, cookieOptions);
+
   //Setting the password to undefined so it doesn't show in the response
   user.password = undefined;
   user.passwordconfirm = undefined;
 
   res.status(statusCode).json({
     status: "success",
-    token,
     data: {
       user,
     },
@@ -46,14 +59,6 @@ const signUp = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordconfirm: req.body.passwordconfirm,
   });
-
-  //For sending user back to client after sign up
-  // const token = signToken(newUser._id);
-
-  //Setting the password to undefined so it doesn't show in the response
-  // newUser.password = undefined;
-  // newUser.passwordconfirm = undefined;
-
   createSendToken(newUser, 201, res);
 });
 
@@ -78,18 +83,26 @@ const login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+const logout = catchAsync(async function (req, res, next) {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({
+    status: "success",
+    message: "You have been logged out successfully",
+  });
+});
+
 const forgetPassword = catchAsync(async function (req, res, next) {
   const email = req.body.email;
-
   // 1. Get user based on POSTed email
   const user = await User.findOne({ email });
   if (!user) {
     return next(new AppError(404, "There is no user with that email address."));
   }
-
   // 2. Generate the random reset token
   const resetToken = crypto.randomBytes(32).toString("hex");
-
   // 3. Hash the token and save it to the user document
   // (Ensure your Mongoose schema has these fields defined)
   user.passwordResetToken = crypto
@@ -147,13 +160,15 @@ const protectMiddleWare = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies && req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
     return next(
       new AppError(
         400,
-        "You are not Signed In . Pelase Login First to access the resource",
+        "You are not Signed In . Please Login First to access the resource",
       ),
     );
   }
@@ -295,6 +310,7 @@ const deleteUserProfile = catchAsync(async (req, res, next) => {
 module.exports = {
   signUp,
   login,
+  logout,
   protectMiddleWare,
   CheckUserrRole,
   forgetPassword,

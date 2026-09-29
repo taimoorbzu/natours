@@ -10,18 +10,20 @@ const {
 const {
   signUp,
   login,
+  logout,
+  protectMiddleWare,
   forgetPassword,
   resetPassword,
   updatePassword,
   updateUserProfile,
   deleteUserProfile,
-  CheckUserrRole
+  CheckUserrRole,
 } = require("../controllers/authController");
-const { protectMiddleWare } = require("../controllers/authController");
 
 //Routes Related to Authentication & Authorization
 userRouter.post("/sign-up", signUp);
 userRouter.post("/login", login);
+userRouter.get("/logout", logout);
 userRouter.patch("/reset-password/:token", resetPassword);
 userRouter.patch("/update-password", protectMiddleWare, updatePassword);
 userRouter.patch("/updateProfile", protectMiddleWare, updateUserProfile);

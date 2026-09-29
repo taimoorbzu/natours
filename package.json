@@ -20,14 +20,19 @@
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
     "express": "^4.22.3",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.7.0",
     "express-routes-visualizer": "^0.2.4",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.1",
     "morgan": "^1.12.1",
     "nodemailer": "^10.0.10",
     "nodemon": "^3.1.14",
     "superagent": "^10.3.0",
-    "validator": "^13.15.35"
+    "validator": "^13.15.35",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "express-middleware-visualizer": "^0.1.3"

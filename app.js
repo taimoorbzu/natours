@@ -8,20 +8,41 @@ const { renderVisualizerHtml } = require("./utils/routeVisualizer.js");
 const AppError = require("./utils/AppError.js");
 const GlobalErrorhandler = require("./utils/global-error-handler.js");
 const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const hpp = require("hpp");
 
 dotenv.config();
 
 const app = express();
-app.use(cookieParser());
 
+// 1. Security HTTP headers & CORS
+app.use(cors());
+app.use(helmet());
+
+// 2. Development logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Middleware
-app.use(express.json());
-app.use(cors());
+// 3. Rate limiting for API requests
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour duration
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again after an hour",
+});
+app.use("/api", limiter);
 
+// 4. Body & Cookie parsers (reading data into req.body and req.cookies)
+app.use(express.json({ limit: "10kb" }));
+app.use(cookieParser());
+app.use(mongoSanitize()); // To save from nosql injection attacks
+app.use(xss()); // To save from cross-site scripting attacks
+app.use(hpp({
+  whitelist: ["duration", "ratingsAverage", "ratingsQuantity", "price", "difficulty", "maxGroupSize", "summary", "tours", "name", "guides"]
+})); // To prevent parameter pollution
 // Serve static files from the 'public' directory
 app.use(express.static(`${__dirname}/public`));
 
