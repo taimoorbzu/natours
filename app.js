@@ -13,6 +13,7 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
+const reviewRouter = require("./routes/reviewRouter.js")
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use((req, res, next) => {
 // Routes
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
 // Interactive Route & Middleware Visualizer Dashboard
 if (process.env.NODE_ENV === "development") {
