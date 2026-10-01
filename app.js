@@ -36,7 +36,7 @@ const limiter = rateLimit({
 app.use("/api", limiter);
 
 // 4. Body & Cookie parsers (reading data into req.body and req.cookies)
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize()); // To save from nosql injection attacks
 app.use(xss()); // To save from cross-site scripting attacks

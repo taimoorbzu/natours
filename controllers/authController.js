@@ -19,9 +19,11 @@ const createSendToken = (user, statusCode, res) => {
 
   //Set the cookie option
   const cookieOptions = {
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
     httpOnly: true,
-    sameSite: "strict"
+    sameSite: "strict",
   };
 
   // Only send over HTTPS in production
@@ -29,7 +31,7 @@ const createSendToken = (user, statusCode, res) => {
     cookieOptions.secure = true;
   }
 
-  res.cookie('jwt', token, cookieOptions);
+  res.cookie("jwt", token, cookieOptions);
 
   //Setting the password to undefined so it doesn't show in the response
   user.password = undefined;
@@ -84,7 +86,7 @@ const login = catchAsync(async (req, res, next) => {
 });
 
 const logout = catchAsync(async function (req, res, next) {
-  res.cookie('jwt', 'loggedout', {
+  res.cookie("jwt", "loggedout", {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
@@ -201,7 +203,10 @@ const CheckUserrRole = function (...roles) {
     // roles [ 'admin'] and  user role ['lead-guide']
     if (!roles.includes(req.user.role)) {
       return next(
-        new AppError(403, "you don't have the Priviledge to this action"),
+        new AppError(
+          403,
+          `You Must have an ${roles.join("/")} account to access this Resource`,
+        ),
       );
     }
     next();

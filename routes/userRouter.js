@@ -33,8 +33,8 @@ userRouter.post("/forget-password", forgetPassword);
 //General User Routes for admin
 userRouter
   .route("/")
-  .get(getAllUsers)
-  .post(protectMiddleWare, CheckUserrRole("admin"), createUser);
+  .get(protectMiddleWare, CheckUserrRole("admin"), getAllUsers)
+  .post(createUser);
 userRouter
   .route("/:id")
   .get(getUserById)
