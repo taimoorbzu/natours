@@ -104,6 +104,10 @@ const tourSchema = new mongoose.Schema({
     },
   ],
   guides: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+  id: false
 });
 
 //Defining the middlewares provided by Mongoose
@@ -111,25 +115,32 @@ tourSchema.pre("aggregate", function () {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 });
 
-tourSchema.pre(/^find/, function (next) {
+tourSchema.pre(/^find/, function () {
   this.find({ secretTour: { $ne: true } });
-  next();
 });
 
-tourSchema.pre(/^find/, function (next) {
+tourSchema.pre(/^find/, function () {
   this.populate({
     path: "guides",
     select: "-__v -passwordChangedAt",
   });
-  next();
 });
 
+tourSchema.virtual("reviews", {
+  ref: "Review",
+  localField: "_id",
+  foreignField: "tour",
+  // justOne: false
+});
 //FOR EMBEDDING The Tour guides in Tours Data Model
 // tourSchema.pre("save", async function () {
 //   const GuidesPromises = this.guides.map(async (el) => await User.findById(el));
 //   const guideList = await Promise.all(GuidesPromises);
 //   this.guides = guideList;
 // });
+
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
 
 const Tour = mongoose.model("Tour", tourSchema);
 module.exports = Tour;

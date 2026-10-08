@@ -65,6 +65,7 @@ if (process.env.NODE_ENV === "development") {
     const html = renderVisualizerHtml(app, {
       "/api/v1/tours": tourRouter,
       "/api/v1/users": userRouter,
+      "/api/v1/reviews": reviewRouter,
     });
     res.setHeader("Content-Type", "text/html");
     res.status(200).send(html);

@@ -1,4 +1,5 @@
-const router = express.Router();
+const express = require("express");
+const router = express.Router({ mergeParams: true });
 const { protectMiddleWare, CheckUserrRole } = require('../controllers/authController');
 const { getAllReviews, createReview, updateReview, deleteReview } = require('../controllers/reviewController');
 
@@ -7,7 +8,7 @@ router.route('/')
     .post(protectMiddleWare, CheckUserrRole('user'), createReview)
 
 router.route('/:id')
-    .patch(updateReview)
-    .delete(deleteReview)
+    .patch(protectMiddleWare, CheckUserrRole('user'), updateReview)
+    .delete(protectMiddleWare, CheckUserrRole('user'), deleteReview)
 
 module.exports = router;

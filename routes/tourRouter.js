@@ -13,7 +13,7 @@ const {
   protectMiddleWare,
   CheckUserrRole,
 } = require("../controllers/authController");
-
+const reviewRouter = require('./reviewRouter')
 const tourRouter = express.Router();
 
 //Route to calculate the statictics about our Tours data
@@ -28,5 +28,8 @@ tourRouter
   .get(getTourById)
   .patch(updateTour)
   .delete(protectMiddleWare, CheckUserrRole("admin", "lead-guide"), deleteTour);
+
+//Nested Routes
+tourRouter.use('/:tourID/reviews', reviewRouter);
 
 module.exports = tourRouter;
