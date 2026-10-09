@@ -113,7 +113,12 @@ const tourSchema = new mongoose.Schema({
 
 //Defining the middlewares provided by Mongoose
 tourSchema.pre("aggregate", function () {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  const hasGeoNear = Object.keys(this.pipeline()[0] || {})[0] === "$geoNear";
+  if (!hasGeoNear) {
+    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  } else {
+    this.pipeline().splice(1, 0, { $match: { secretTour: { $ne: true } } });
+  }
 });
 
 tourSchema.pre(/^find/, function () {

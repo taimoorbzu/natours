@@ -8,6 +8,8 @@ const {
   getCheapestRoutes,
   getTourStats,
   getMonthlyPlan,
+  getToursWithin,
+  getDistances,
 } = require("../controllers/tourController");
 const {
   protectMiddleWare,
@@ -34,5 +36,6 @@ tourRouter.use('/:tourID/reviews', reviewRouter);
 
 //GeoSpatial Queries Routes
 tourRouter.route('/tours-within/:distance/center/:latlng/unit/:unit').get(getToursWithin);
+tourRouter.route('/distances/:latlng/unit/:unit').get(getDistances);
 
 module.exports = tourRouter;
