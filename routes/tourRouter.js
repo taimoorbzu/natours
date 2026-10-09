@@ -35,7 +35,12 @@ tourRouter
 tourRouter.use('/:tourID/reviews', reviewRouter);
 
 //GeoSpatial Queries Routes
-tourRouter.route('/tours-within/:distance/center/:latlng/unit/:unit').get(getToursWithin);
-tourRouter.route('/distances/:latlng/unit/:unit').get(getDistances);
+tourRouter
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(protectMiddleWare, getToursWithin);
+
+tourRouter
+  .route('/distances/:latlng/unit/:unit')
+  .get(protectMiddleWare, getDistances);
 
 module.exports = tourRouter;
