@@ -32,4 +32,7 @@ tourRouter
 //Nested Routes
 tourRouter.use('/:tourID/reviews', reviewRouter);
 
+//GeoSpatial Queries Routes
+tourRouter.route('/tours-within/:distance/center/:latlng/unit/:unit').get(getToursWithin);
+
 module.exports = tourRouter;
