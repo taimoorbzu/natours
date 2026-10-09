@@ -20,15 +20,24 @@ const tourRouter = express.Router();
 
 //Route to calculate the statictics about our Tours data
 tourRouter.route("/tour-stats").get(getTourStats);
-tourRouter.route("/getmonthlyplan/:year").get(getMonthlyPlan);
+tourRouter
+  .route("/getmonthlyplan/:year")
+  .get(
+    protectMiddleWare,
+    CheckUserrRole("admin", "lead-guide", "guide"),
+    getMonthlyPlan
+  );
 
 //Normal Routes + the Alias Routes (routes with middlewares)
 tourRouter.route("/cheapest-tours").get(getCheapestRoutes, getAllTours);
-tourRouter.route("/").get(protectMiddleWare, getAllTours).post(createTour);
+tourRouter
+  .route("/")
+  .get(protectMiddleWare, getAllTours)
+  .post(protectMiddleWare, CheckUserrRole("admin", "lead-guide"), createTour);
 tourRouter
   .route("/:id")
   .get(getTourById)
-  .patch(updateTour)
+  .patch(protectMiddleWare, CheckUserrRole("admin", "lead-guide"), updateTour)
   .delete(protectMiddleWare, CheckUserrRole("admin", "lead-guide"), deleteTour);
 
 //Nested Routes

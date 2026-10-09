@@ -34,10 +34,10 @@ userRouter.post("/forget-password", forgetPassword);
 userRouter
   .route("/")
   .get(protectMiddleWare, CheckUserrRole("admin"), getAllUsers)
-  .post(createUser);
+  .post(protectMiddleWare, CheckUserrRole("admin"), createUser);
 userRouter
   .route("/:id")
-  .get(getUserById)
+  .get(protectMiddleWare, CheckUserrRole("admin"), getUserById)
   .patch(protectMiddleWare, CheckUserrRole("admin"), updateUser)
   .delete(protectMiddleWare, CheckUserrRole("admin"), deleteUser);
 

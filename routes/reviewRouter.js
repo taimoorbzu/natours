@@ -8,7 +8,7 @@ router.route('/')
     .post(protectMiddleWare, CheckUserrRole('user'), createReview)
 
 router.route('/:id')
-    .patch(protectMiddleWare, CheckUserrRole('user'), updateReview)
-    .delete(protectMiddleWare, CheckUserrRole('user'), deleteReview)
+    .patch(protectMiddleWare, CheckUserrRole('user', 'admin'), updateReview)
+    .delete(protectMiddleWare, CheckUserrRole('user', 'admin'), deleteReview)
 
 module.exports = router;
