@@ -35,7 +35,10 @@ mongoose.connect(DB).then(() => {
 const importData = async () => {
     try {
         await Tour.create(tours);
-        await User.create(users, { validateBeforeSave: false });
+        // Using collection.insertMany avoids triggering pre('save') hooks which would double-hash already hashed passwords
+        await User.collection.insertMany(
+            users.map(u => ({ ...u, _id: new mongoose.Types.ObjectId(u._id) }))
+        );
         await Review.create(reviews);
         console.log('Data successfully loaded!');
     } catch (err) {
