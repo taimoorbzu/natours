@@ -13,7 +13,8 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
-const reviewRouter = require("./routes/reviewRouter.js")
+const reviewRouter = require("./routes/reviewRouter.js");
+const { setupSwagger } = require("./swagger/swagger.js");
 
 dotenv.config();
 
@@ -21,7 +22,11 @@ const app = express();
 
 // 1. Security HTTP headers & CORS
 app.use(cors());
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 
 // 2. Development logging
 if (process.env.NODE_ENV === "development") {
@@ -46,6 +51,9 @@ app.use(hpp({
 })); // To prevent parameter pollution
 // Serve static files from the 'public' directory
 app.use(express.static(`${__dirname}/public`));
+
+// Swagger API Documentation (available at /api-docs and /docs)
+setupSwagger(app);
 
 // Custom timestamp middleware
 app.use((req, res, next) => {

@@ -21,6 +21,7 @@ mongoose
 
 const server = app.listen(PORT, () => {
   console.log(`API is running at http://localhost:${PORT}`);
+  console.log(`Swagger API Docs: http://localhost:${PORT}/api-docs`);
   // console.log(`Interactive Route & Middleware Visualizer Dashboard: http://localhost:${PORT}/routes`);
 });
 

@@ -1,0 +1,1626 @@
+openapi: 3.0.3
+info:
+  title: Natours API
+  description: |
+    Comprehensive RESTful API for **Natours** — a tour booking and exploration platform.
+    
+    ### Features
+    - **Authentication & Authorization**: JWT token-based auth with roles (`user`, `guide`, `lead-guide`, `admin`)
+    - **Tour Management**: Full CRUD, advanced filtering, sorting, pagination, monthly planning, and geospatial queries
+    - **Review System**: Nested reviews for tours with rating aggregations
+    - **User Profiles**: Profile updates, password reset flows via email, and administrative user controls
+    
+    ### Authentication
+    Protected routes require a Bearer token in the `Authorization` header:
+    ```
+    Authorization: Bearer <your_jwt_token>
+    ```
+    Alternatively, JWT tokens sent in cookies (`jwt`) are also accepted. Click the **Authorize** button above to authenticate requests in this documentation.
+  version: 1.0.0
+  contact:
+    name: Natours Support
+    email: support@natours.io
+
+servers:
+  - url: http://localhost:4000
+    description: Local Development Server
+  - url: /
+    description: Current Server Host
+
+tags:
+  - name: Authentication & Profile
+    description: User registration, login, logout, password reset, and personal profile operations
+  - name: Tours
+    description: Tour listings, details, top cheap tours, statistics, monthly plans, and geospatial searches
+  - name: Reviews
+    description: Tour reviews and rating management
+  - name: Users (Admin)
+    description: Administrative management of user accounts
+
+paths:
+  # =========================================================================
+  # AUTHENTICATION & PROFILE
+  # =========================================================================
+  /api/v1/users/sign-up:
+    post:
+      tags:
+        - Authentication & Profile
+      summary: Register a new user
+      description: Creates a new user account with default role `user` and returns a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpInput'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+
+  /api/v1/users/login:
+    post:
+      tags:
+        - Authentication & Profile
+      summary: User login
+      description: Authenticates user credentials and returns a JWT token (also set in cookie).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /api/v1/users/logout:
+    get:
+      tags:
+        - Authentication & Profile
+      summary: User logout
+      description: Clears the JWT authentication cookie.
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: You have been logged out successfully
+
+  /api/v1/users/forget-password:
+    post:
+      tags:
+        - Authentication & Profile
+      summary: Request password reset token
+      description: Sends an email containing a password reset token valid for 10 minutes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        '200':
+          description: Reset token sent to email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Token sent to email!
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /api/v1/users/reset-password/{token}:
+    patch:
+      tags:
+        - Authentication & Profile
+      summary: Reset password with token
+      description: Sets a new password using the reset token received via email.
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+          description: Plain reset token sent to user's email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordInput'
+      responses:
+        '200':
+          description: Password reset successfully, returns new JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+
+  /api/v1/users/update-password:
+    patch:
+      tags:
+        - Authentication & Profile
+      summary: Update current user password
+      description: Updates the logged-in user password. Requires valid authentication.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordInput'
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /api/v1/users/updateProfile:
+    patch:
+      tags:
+        - Authentication & Profile
+      summary: Update current user profile
+      description: Updates the logged-in user profile details (name, email). Cannot update password here.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileInput'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /api/v1/users/deleteProfile:
+    delete:
+      tags:
+        - Authentication & Profile
+      summary: Delete (deactivate) current user account
+      description: Soft deletes the currently authenticated user by setting `active: false`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Account deactivated successfully (No Content)
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  # =========================================================================
+  # TOURS
+  # =========================================================================
+  /api/v1/tours:
+    get:
+      tags:
+        - Tours
+      summary: Get all tours
+      description: Retrieve list of tours with filtering, sorting, field limiting, and pagination. Requires authentication.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of results per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            example: price,-ratingsAverage
+          description: Sort fields (prefix with `-` for descending)
+        - in: query
+          name: fields
+          schema:
+            type: string
+            example: name,price,ratingsAverage,summary,duration
+          description: Comma-separated list of fields to project
+        - in: query
+          name: difficulty
+          schema:
+            type: string
+            enum: [easy, medium, difficult]
+          description: Filter tours by difficulty
+        - in: query
+          name: price[gte]
+          schema:
+            type: number
+          description: Filter tours with price greater than or equal to value
+        - in: query
+          name: price[lte]
+          schema:
+            type: number
+          description: Filter tours with price less than or equal to value
+      responses:
+        '200':
+          description: List of tours retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  results:
+                    type: integer
+                    example: 9
+                  data:
+                    type: object
+                    properties:
+                      tours:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Tour'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          description: Page out of bounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Tours
+      summary: Create a new tour
+      description: Create a tour document. Restricted to `admin` and `lead-guide`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TourInput'
+      responses:
+        '201':
+          description: Tour created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      tour:
+                        $ref: '#/components/schemas/Tour'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /api/v1/tours/cheapest-tours:
+    get:
+      tags:
+        - Tours
+      summary: Get top 5 cheapest tours (Alias)
+      description: Pre-filtered alias route that returns the top 5 highest-rated cheapest tours.
+      responses:
+        '200':
+          description: Top 5 cheapest tours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  results:
+                    type: integer
+                    example: 5
+                  data:
+                    type: object
+                    properties:
+                      tours:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Tour'
+
+  /api/v1/tours/tour-stats:
+    get:
+      tags:
+        - Tours
+      summary: Get tour statistics
+      description: Aggregated tour statistics calculated across difficulties (min/max/average price, rating, durations).
+      responses:
+        '200':
+          description: Aggregated statistics by difficulty
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      stats:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TourStats'
+
+  /api/v1/tours/getmonthlyplan/{year}:
+    get:
+      tags:
+        - Tours
+      summary: Get monthly tour plan for a given year
+      description: Aggregates tour start dates and plans per month. Restricted to `admin`, `lead-guide`, and `guide`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: year
+          required: true
+          schema:
+            type: integer
+            example: 2024
+          description: Calendar year for planning
+      responses:
+        '200':
+          description: Monthly plan aggregation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      MonthlyPlan:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MonthlyPlan'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /api/v1/tours/tours-within/{distance}/center/{latlng}/unit/{unit}:
+    get:
+      tags:
+        - Tours
+      summary: Find tours within distance from coordinates
+      description: Geospatial query to find all tours starting within a given radius from a geographic center point.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: distance
+          required: true
+          schema:
+            type: number
+            example: 250
+          description: Radius distance
+        - in: path
+          name: latlng
+          required: true
+          schema:
+            type: string
+            example: '34.111745,-118.113491'
+          description: 'Center point in format: latitude,longitude'
+        - in: path
+          name: unit
+          required: true
+          schema:
+            type: string
+            enum: [mi, km]
+            example: mi
+          description: Distance measurement unit (miles or kilometers)
+      responses:
+        '200':
+          description: Tours located within radius
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  results:
+                    type: integer
+                    example: 3
+                  data:
+                    type: object
+                    properties:
+                      tours:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Tour'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /api/v1/tours/distances/{latlng}/unit/{unit}:
+    get:
+      tags:
+        - Tours
+      summary: Calculate distances to all tours from coordinates
+      description: Calculates geodesic distance from a user's location to the start location of all tours using MongoDB $geoNear.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: latlng
+          required: true
+          schema:
+            type: string
+            example: '34.111745,-118.113491'
+          description: 'Center point in format: latitude,longitude'
+        - in: path
+          name: unit
+          required: true
+          schema:
+            type: string
+            enum: [mi, km]
+            example: mi
+          description: Distance unit (mi or km)
+      responses:
+        '200':
+          description: Distance calculations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: string
+                              example: 5c88fa8cf4afda39709c2955
+                            name:
+                              type: string
+                              example: The Forest Hiker
+                            distance:
+                              type: number
+                              example: 125.43
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /api/v1/tours/{id}:
+    get:
+      tags:
+        - Tours
+      summary: Get tour by ID
+      description: Retrieves a single tour document with populated reviews and guides.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Tour MongoDB ID
+      responses:
+        '200':
+          description: Tour details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      tour:
+                        $ref: '#/components/schemas/Tour'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    patch:
+      tags:
+        - Tours
+      summary: Update tour by ID
+      description: Update tour details. Restricted to `admin` and `lead-guide`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Tour MongoDB ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: The Grand Forest Hiker
+                price:
+                  type: number
+                  example: 597
+                difficulty:
+                  type: string
+                  enum: [easy, medium, difficult]
+                summary:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Tour updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      tour:
+                        $ref: '#/components/schemas/Tour'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    delete:
+      tags:
+        - Tours
+      summary: Delete tour by ID
+      description: Delete a tour. Restricted to `admin` and `lead-guide`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Tour MongoDB ID
+      responses:
+        '204':
+          description: Tour deleted successfully (No Content)
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /api/v1/tours/{tourID}/reviews:
+    get:
+      tags:
+        - Tours
+        - Reviews
+      summary: Get all reviews for a specific tour
+      description: Nested route that retrieves all reviews belonging to the given tour ID.
+      parameters:
+        - in: path
+          name: tourID
+          required: true
+          schema:
+            type: string
+          description: Tour MongoDB ID
+      responses:
+        '200':
+          description: Reviews for the tour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  results:
+                    type: integer
+                    example: 4
+                  data:
+                    type: object
+                    properties:
+                      reviews:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'
+
+    post:
+      tags:
+        - Tours
+        - Reviews
+      summary: Create a review for a specific tour
+      description: Nested route to write a review for a tour. Restricted to authenticated users with role `user`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: tourID
+          required: true
+          schema:
+            type: string
+          description: Tour MongoDB ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - review
+                - rating
+              properties:
+                review:
+                  type: string
+                  example: Incredible views and fantastic guide service!
+                rating:
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      review:
+                        $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  # =========================================================================
+  # REVIEWS
+  # =========================================================================
+  /api/v1/reviews:
+    get:
+      tags:
+        - Reviews
+      summary: Get all reviews
+      description: Retrieve all reviews in the database.
+      responses:
+        '200':
+          description: List of all reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  results:
+                    type: integer
+                    example: 18
+                  data:
+                    type: object
+                    properties:
+                      reviews:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'
+
+    post:
+      tags:
+        - Reviews
+      summary: Create a review directly
+      description: Create a review by specifying tour and user. Restricted to role `user`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewInput'
+      responses:
+        '201':
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      review:
+                        $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /api/v1/reviews/{id}:
+    patch:
+      tags:
+        - Reviews
+      summary: Update review by ID
+      description: Update review text or rating. Restricted to review owner (`user`) or `admin`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Review ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                review:
+                  type: string
+                  example: Updated review text. Even better second time!
+                rating:
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+      responses:
+        '200':
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      review:
+                        $ref: '#/components/schemas/Review'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    delete:
+      tags:
+        - Reviews
+      summary: Delete review by ID
+      description: Delete a review document. Restricted to review owner (`user`) or `admin`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Review ID
+      responses:
+        '204':
+          description: Review deleted successfully (No Content)
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  # =========================================================================
+  # USERS (ADMIN)
+  # =========================================================================
+  /api/v1/users:
+    get:
+      tags:
+        - Users (Admin)
+      summary: Get all users
+      description: Returns a list of all active users. Restricted to role `admin`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  results:
+                    type: integer
+                    example: 12
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+    post:
+      tags:
+        - Users (Admin)
+      summary: Create a user
+      description: Create a user account administratively with custom role. Restricted to role `admin`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - passwordconfirm
+              properties:
+                name:
+                  type: string
+                  example: Jane Guide
+                email:
+                  type: string
+                  format: email
+                  example: jane@natours.io
+                role:
+                  type: string
+                  enum: [user, guide, lead-guide, admin]
+                  default: user
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: test1234
+                passwordconfirm:
+                  type: string
+                  example: test1234
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /api/v1/users/{id}:
+    get:
+      tags:
+        - Users (Admin)
+      summary: Get user by ID
+      description: Retrieve user details by ID. Restricted to role `admin`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: User MongoDB ID
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    patch:
+      tags:
+        - Users (Admin)
+      summary: Update user by ID
+      description: Update user fields (e.g. role, name, email). Restricted to role `admin`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: User MongoDB ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Jane Doe
+                email:
+                  type: string
+                  format: email
+                  example: janedoe@natours.io
+                role:
+                  type: string
+                  enum: [user, guide, lead-guide, admin]
+                  example: lead-guide
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    delete:
+      tags:
+        - Users (Admin)
+      summary: Delete user by ID
+      description: Hard deletes user document. Restricted to role `admin`.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: User MongoDB ID
+      responses:
+        '204':
+          description: User permanently deleted (No Content)
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+# =============================================================================
+# COMPONENTS & SCHEMAS
+# =============================================================================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your JWT Bearer token obtained from `/api/v1/users/login` or `/api/v1/users/sign-up`.
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+      description: JWT cookie sent automatically after login/signup.
+
+  responses:
+    400BadRequest:
+      description: Bad Request (Validation failure, missing fields)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: fail
+            message: Please provide email and password
+
+    401Unauthorized:
+      description: Unauthorized (Invalid or missing JWT token)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: fail
+            message: You are not Signed In. Please Login First to access the resource
+
+    403Forbidden:
+      description: Forbidden (User does not have required role)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: fail
+            message: You Must have an admin account to access this Resource
+
+    404NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: fail
+            message: Tour not found
+
+  schemas:
+    # ---------------- USER SCHEMAS ----------------
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5c8a1d5b0190b214360dc057
+        name:
+          type: string
+          example: Jonas Schmedtmann
+        email:
+          type: string
+          format: email
+          example: jonas@example.com
+        role:
+          type: string
+          enum: [user, guide, lead-guide, admin]
+          example: admin
+        photo:
+          type: string
+          example: user-1.jpg
+
+    SignUpInput:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - passwordconfirm
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: Alex Mercer
+        email:
+          type: string
+          format: email
+          example: alex@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: pass1234
+        passwordconfirm:
+          type: string
+          format: password
+          example: pass1234
+
+    LoginInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: alex@example.com
+        password:
+          type: string
+          format: password
+          example: pass1234
+
+    UpdatePasswordInput:
+      type: object
+      required:
+        - oldPassword
+        - password
+        - passwordconfirm
+      properties:
+        oldPassword:
+          type: string
+          format: password
+          example: pass1234
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: newpass1234
+        passwordconfirm:
+          type: string
+          format: password
+          example: newpass1234
+
+    ResetPasswordInput:
+      type: object
+      required:
+        - password
+        - passwordconfirm
+      properties:
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: brandnewpass1234
+        passwordconfirm:
+          type: string
+          format: password
+          example: brandnewpass1234
+
+    UpdateProfileInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: Alex Mercer Updated
+        email:
+          type: string
+          format: email
+          example: alexupdated@example.com
+
+    AuthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjOGExZ...
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+
+    # ---------------- TOUR SCHEMAS ----------------
+    GeoLocation:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [Point]
+          example: Point
+        coordinates:
+          type: array
+          items:
+            type: number
+          example: [-118.113491, 34.111745]
+          description: '[longitude, latitude]'
+        address:
+          type: string
+          example: 123 Main St, Pasadena, CA
+        description:
+          type: string
+          example: Luminary trailhead
+        day:
+          type: integer
+          example: 1
+
+    Tour:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5c88fa8cf4afda39709c2955
+        name:
+          type: string
+          example: The Forest Hiker
+        duration:
+          type: integer
+          example: 5
+        maxGroupSize:
+          type: integer
+          example: 25
+        difficulty:
+          type: string
+          enum: [easy, medium, difficult]
+          example: easy
+        ratingsAverage:
+          type: number
+          minimum: 1
+          maximum: 5
+          example: 4.7
+        ratingsQuantity:
+          type: integer
+          example: 37
+        price:
+          type: number
+          example: 397
+        priceDiscount:
+          type: number
+          example: 50
+        summary:
+          type: string
+          example: Breathtaking hike through the Canadian Rockies
+        description:
+          type: string
+          example: Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        imageCover:
+          type: string
+          example: tour-1-cover.jpg
+        images:
+          type: array
+          items:
+            type: string
+          example: [tour-1-1.jpg, tour-1-2.jpg, tour-1-3.jpg]
+        startDates:
+          type: array
+          items:
+            type: string
+            format: date-time
+          example: ['2024-04-25T09:00:00.000Z', '2024-07-20T09:00:00.000Z']
+        startLocation:
+          $ref: '#/components/schemas/GeoLocation'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoLocation'
+        guides:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+
+    TourInput:
+      type: object
+      required:
+        - name
+        - duration
+        - maxGroupSize
+        - difficulty
+        - price
+        - summary
+        - imageCover
+      properties:
+        name:
+          type: string
+          minLength: 10
+          maxLength: 40
+          example: The Sea Explorer
+        duration:
+          type: integer
+          example: 7
+        maxGroupSize:
+          type: integer
+          example: 15
+        difficulty:
+          type: string
+          enum: [easy, medium, difficult]
+          example: medium
+        price:
+          type: number
+          example: 497
+        priceDiscount:
+          type: number
+          example: 40
+        summary:
+          type: string
+          example: Exploring the scenic coast and hidden beaches
+        description:
+          type: string
+          example: Full expedition with seasoned lead guides, sea kayaking, and beach camping.
+        imageCover:
+          type: string
+          example: tour-2-cover.jpg
+        images:
+          type: array
+          items:
+            type: string
+          example: [tour-2-1.jpg, tour-2-2.jpg]
+        startDates:
+          type: array
+          items:
+            type: string
+            format: date-time
+          example: ['2024-06-15T09:00:00.000Z']
+        startLocation:
+          type: object
+          properties:
+            type:
+              type: string
+              default: Point
+            coordinates:
+              type: array
+              items:
+                type: number
+              example: [-80.185942, 25.774772]
+            address:
+              type: string
+              example: 301 Biscayne Blvd, Miami, FL
+            description:
+              type: string
+              example: Miami Marina
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoLocation'
+
+    TourStats:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: easy
+        numTours:
+          type: integer
+          example: 3
+        avgPrice:
+          type: number
+          example: 850.5
+        minPrice:
+          type: number
+          example: 700
+        maxPrice:
+          type: number
+          example: 1197
+        avgRating:
+          type: number
+          example: 4.8
+        numRatings:
+          type: integer
+          example: 64
+        avgDuration:
+          type: number
+          example: 5.6
+        minDuration:
+          type: integer
+          example: 4
+        maxDuration:
+          type: integer
+          example: 9
+
+    MonthlyPlan:
+      type: object
+      properties:
+        month:
+          type: integer
+          example: 7
+        numTourStarts:
+          type: integer
+          example: 3
+        tours:
+          type: array
+          items:
+            type: string
+          example: ['The Forest Hiker', 'The Sea Explorer', 'The City Wanderer']
+
+    # ---------------- REVIEW SCHEMAS ----------------
+    Review:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5c88fa8cf4afda39709c2988
+        review:
+          type: string
+          example: Canyons were stunning and the guide was super knowledgeable!
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+        tour:
+          type: string
+          example: 5c88fa8cf4afda39709c2955
+        user:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 5c8a1d5b0190b214360dc057
+            name:
+              type: string
+              example: Sophie Turner
+            photo:
+              type: string
+              example: user-2.jpg
+
+    ReviewInput:
+      type: object
+      required:
+        - review
+        - rating
+        - tour
+      properties:
+        review:
+          type: string
+          example: Had an absolute blast. Highly recommended!
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+          example: 4.5
+        tour:
+          type: string
+          example: 5c88fa8cf4afda39709c2955
+        user:
+          type: string
+          description: Automatically set to authenticated user if omitted
+          example: 5c8a1d5b0190b214360dc057
+
+    # ---------------- GENERIC SCHEMAS ----------------
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: fail
+        message:
+          type: string
+          example: Specified resource could not be found or processed
