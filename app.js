@@ -17,6 +17,7 @@ const reviewRouter = require("./routes/reviewRouter.js");
 const { setupSwagger } = require("./swagger/swagger.js");
 const path = require("path");
 const pug = require('pug');
+const { title } = require("process");
 
 dotenv.config();
 
@@ -66,13 +67,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// Routes for API requests
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
+
+//Routes for User Interface
 app.get('/', (req, res) => {
-  res.status(200).render('base');
+  res.status(200).render('base', {
+    title: "Home Page"
+  });
 })
+
+app.get('/overview', (req, res) => {
+  res.status(200).render('overview', {
+    title: "Overview"
+  });
+});
+
+app.get('/tour', (req, res) => {
+  res.status(200).render('tour', {
+    title: "The Forest Hiker"
+  });
+});
 
 // Interactive Route & Middleware Visualizer Dashboard
 if (process.env.NODE_ENV === "development") {
