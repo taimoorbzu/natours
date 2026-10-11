@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const dotenv = require("dotenv");
 const tourRouter = require("./routes/tourRouter.js");
 const userRouter = require("./routes/userRouter.js");
+const viewRouter = require('./routes/viewsRouter.js')
 const { renderVisualizerHtml } = require("./utils/routeVisualizer.js");
 const AppError = require("./utils/AppError.js");
 const GlobalErrorhandler = require("./utils/global-error-handler.js");
@@ -73,23 +74,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
 
 //Routes for User Interface
-app.get('/', (req, res) => {
-  res.status(200).render('base', {
-    title: "Home Page"
-  });
-})
-
-app.get('/overview', (req, res) => {
-  res.status(200).render('overview', {
-    title: "Overview"
-  });
-});
-
-app.get('/tour', (req, res) => {
-  res.status(200).render('tour', {
-    title: "The Forest Hiker"
-  });
-});
+app.use('/', viewRouter)
 
 // Interactive Route & Middleware Visualizer Dashboard
 if (process.env.NODE_ENV === "development") {
