@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const slugify = require("slugify");
 const User = require("./userModel");
 // const validator = require('validator')
 
@@ -11,6 +12,7 @@ const tourSchema = new mongoose.Schema({
     maxlength: [40, "Tour name must be less than 40 characters"],
     minlength: [10, "Tour name must be more than 10 characters"],
   },
+  slug: String,
   duration: {
     type: Number,
     required: [true, "Tour must have a duration"],
@@ -111,7 +113,12 @@ const tourSchema = new mongoose.Schema({
   id: false
 });
 
-//Defining the middlewares provided by Mongoose
+// Defining the middlewares provided by Mongoose
+// DOCUMENT MIDDLEWARE: runs before .save() and .create()
+tourSchema.pre("save", function () {
+  this.slug = slugify(this.name, { lower: true });
+});
+
 tourSchema.pre("aggregate", function () {
   const hasGeoNear = Object.keys(this.pipeline()[0] || {})[0] === "$geoNear";
   if (!hasGeoNear) {
