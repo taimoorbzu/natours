@@ -15,10 +15,14 @@ const xss = require("xss-clean");
 const hpp = require("hpp");
 const reviewRouter = require("./routes/reviewRouter.js");
 const { setupSwagger } = require("./swagger/swagger.js");
+const path = require("path");
+const pug = require('pug');
 
 dotenv.config();
 
 const app = express();
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 // 1. Security HTTP headers & CORS
 app.use(cors());
@@ -66,6 +70,9 @@ app.use((req, res, next) => {
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.get('/', (req, res) => {
+  res.status(200).render('base');
+})
 
 // Interactive Route & Middleware Visualizer Dashboard
 if (process.env.NODE_ENV === "development") {

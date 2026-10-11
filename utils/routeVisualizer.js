@@ -328,9 +328,9 @@ function renderVisualizerHtml(app, registeredRouters) {
 
         <div class="routes-list" id="routesList">
             ${endpoints.map(ep => {
-                const color = methodColors[ep.method] || { bg: 'rgba(255,255,255,0.1)', text: '#fff', border: '#555' };
-                const formattedPath = ep.path.replace(/(:\w+)/g, '<span>$1</span>');
-                return `
+        const color = methodColors[ep.method] || { bg: 'rgba(255,255,255,0.1)', text: '#fff', border: '#555' };
+        const formattedPath = ep.path.replace(/(:\w+)/g, '<span>$1</span>');
+        return `
                 <div class="route-card" data-method="${ep.method}" data-path="${ep.path.toLowerCase()}" data-handler="${ep.handlers.join(' ').toLowerCase()}">
                     <div class="route-header">
                         <div class="route-main">
@@ -352,7 +352,7 @@ function renderVisualizerHtml(app, registeredRouters) {
                     </div>
                 </div>
                 `;
-            }).join('')}
+    }).join('')}
         </div>
     </div>
 
