@@ -50,9 +50,3 @@ export const displayMap = locations => {
   // Add zoom and rotation controls (+ / - buttons)
   map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
 };
-
-const mapBox = document.getElementById('map');
-if (mapBox) {
-  const locations = JSON.parse(mapBox.dataset.locations);
-  displayMap(locations);
-}
