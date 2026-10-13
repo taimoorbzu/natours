@@ -1,15 +1,13 @@
 /* eslint-disable */
 export const displayMap = locations => {
+  // Note: Put your free Mapbox Public Token from https://account.mapbox.com here:
   mapboxgl.accessToken =
-    'pk.eyJ1Ijoiam9uYXNzY2htZWR0bWFubiIsImEiOiJjam54ZmM5N3gwNjAzM3dtZDNxYTVlMnd2In0.ytpI7V7w7cyT1Kq5rT9Z1A';
+    'pk.eyJ1IjoidGFtb3JtaXJ4YSIsImEiOiJjbXY1Y2lyc2gwNTI2MnhyNG9seTNqbHQ2In0.JL7xntfmCUHrlwQdjF_TBg';
 
   var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/jonasschmedtmann/cjvi9q8jd04mi1cpgmg7ev3dy',
-    scrollZoom: false
-    // center: [-118.113491, 34.111745],
-    // zoom: 10,
-    // interactive: false
+    style: 'mapbox://styles/mapbox/outdoors-v12',
+    scrollZoom: false,
   });
 
   const bounds = new mapboxgl.LngLatBounds();
@@ -45,6 +43,16 @@ export const displayMap = locations => {
       bottom: 150,
       left: 100,
       right: 100
-    }
+    },
+    maxZoom: 10
   });
+
+  // Add zoom and rotation controls (+ / - buttons)
+  map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
 };
+
+const mapBox = document.getElementById('map');
+if (mapBox) {
+  const locations = JSON.parse(mapBox.dataset.locations);
+  displayMap(locations);
+}
