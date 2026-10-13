@@ -312,10 +312,43 @@ const deleteUserProfile = catchAsync(async (req, res, next) => {
   });
 });
 
+// Only for rendered pages, no errors!
+const isLoggedIn = async (req, res, next) => {
+  if (req.cookies && req.cookies.jwt) {
+    try {
+      // 1) Verify token
+      const decode = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET
+      );
+
+      // 2) Check if user still exists
+      const currentUser = await User.findById(decode.id);
+      if (!currentUser) {
+        return next();
+      }
+
+      // 3) Check if user changed password after the token was issued
+      if (currentUser.changedPasswordAfter(decode.iat)) {
+        return next();
+      }
+
+      // THERE IS A LOGGED IN USER
+      res.locals.user = currentUser;
+      req.user = currentUser;
+      return next();
+    } catch (err) {
+      return next();
+    }
+  }
+  next();
+};
+
 module.exports = {
   signUp,
   login,
   logout,
+  isLoggedIn,
   protectMiddleWare,
   CheckUserrRole,
   forgetPassword,
