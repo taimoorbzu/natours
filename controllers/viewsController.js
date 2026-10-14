@@ -4,9 +4,9 @@ const AppError = require("../utils/AppError");
 
 const getOverview = catchAsync(async (req, res, next) => {
   const tours = await Tour.find();
-  // if (!tours) {
-  //     return next(new AppError(404, 'No tours found'));
-  // }
+  if (!tours) {
+    return next(new AppError(404, "No tours found Please try again!"));
+  }
   res.status(200).render("overview", {
     tours,
     title: "All Tours",
@@ -19,7 +19,7 @@ const getTour = catchAsync(async (req, res, next) => {
     fields: "review rating user",
   });
   if (!tour) {
-    return next(new AppError(404, "There is no tour with that name."));
+    return next(new AppError(404, `There is no tour with name : ${req.params.slug}`));
   }
   res.status(200).render("tour", {
     tour,
