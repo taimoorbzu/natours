@@ -21,6 +21,7 @@ const handleValidationErrorDB = (err) => {
 
 const developmentErrors = function (err, req, res) {
   if (req.originalUrl.startsWith("/api")) {
+    console.error("ERROR: ", err);
     return res.status(err.statusCode).json({
       status: err.status,
       statusCode: err.statusCode,
