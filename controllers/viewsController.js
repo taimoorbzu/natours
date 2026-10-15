@@ -43,10 +43,17 @@ const getUser = catchAsync(async (req, res, next) => {
   });
 });
 
+const getSignup = (req, res) => {
+  res.status(200).render('signup', {
+    title: 'Create your account',
+  });
+};
+
 
 module.exports = {
   getOverview,
   getTour,
   Login,
   getUser,
+  getSignup
 };
