@@ -9,11 +9,9 @@ const { isLoggedIn, protectMiddleWare } = require("../controllers/authController
 
 const router = express.Router();
 
-router.use(isLoggedIn);
-
-router.get("/login", Login);
+router.get("/", isLoggedIn, getOverview);
+router.get("/tour/:slug", isLoggedIn, getTour);
+router.get("/login", isLoggedIn, Login);
 router.get("/me", protectMiddleWare, getUser);
-router.get("/", getOverview);
-router.get("/tour/:slug", getTour);
 
 module.exports = router;
