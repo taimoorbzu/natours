@@ -28,7 +28,7 @@ export const signup = async (name, email, password, passwordconfirm) => {
   try {
     const res = await axios({
       method: 'POST',
-      url: '/api/v1/users/signup',
+      url: '/api/v1/users/sign-up',
       data: {
         name,
         email,
@@ -38,7 +38,7 @@ export const signup = async (name, email, password, passwordconfirm) => {
     });
 
     if (res.data.status === 'success') {
-      showAlert('success', 'Logged in successfully!');
+      showAlert('success', 'Account created and logged in successfully!');
       window.setTimeout(() => {
         location.assign('/');
       }, 1500);

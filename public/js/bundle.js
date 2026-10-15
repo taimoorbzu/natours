@@ -12122,7 +12122,7 @@
   });
 
   // public/js/login.js
-  var login, logout;
+  var login, signup, logout;
   var init_login = __esm({
     "public/js/login.js"() {
       init_axios2();
@@ -12139,6 +12139,28 @@
           });
           if (res.data.status === "success") {
             showAlert("success", "Logged in successfully!");
+            window.setTimeout(() => {
+              location.assign("/");
+            }, 1500);
+          }
+        } catch (err) {
+          showAlert("error", err.response.data.message);
+        }
+      };
+      signup = async (name, email, password, passwordconfirm) => {
+        try {
+          const res = await axios_default({
+            method: "POST",
+            url: "/api/v1/users/sign-up",
+            data: {
+              name,
+              email,
+              password,
+              passwordconfirm
+            }
+          });
+          if (res.data.status === "success") {
+            showAlert("success", "Account created and logged in successfully!");
             window.setTimeout(() => {
               location.assign("/");
             }, 1500);
@@ -12279,7 +12301,7 @@
           const name = document.getElementById("name").value;
           const email = document.getElementById("email").value;
           const password = document.getElementById("password").value;
-          const passwordconfirm = document.getElementById("password-confirm").value;
+          const passwordconfirm = document.getElementById("passwordConfirm").value;
           signup(name, email, password, passwordconfirm);
         });
       }
