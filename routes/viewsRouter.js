@@ -3,7 +3,7 @@ const {
   getOverview,
   getTour,
   Login,
-  getUser
+  getUser,
 } = require("../controllers/viewsController.js");
 const { isLoggedIn, protectMiddleWare } = require("../controllers/authController.js");
 

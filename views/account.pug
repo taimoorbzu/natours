@@ -26,7 +26,7 @@ block content
                 use(xlink:href="/img/icons.svg#icon-credit-card")
               | Billing
 
-        - if (user.role === 'admin')
+        - if (user.role === "admin")
           .admin-nav
             h5.admin-nav__heading Admin
             ul.side-nav
@@ -70,8 +70,16 @@ block content
                 required
               )
             .form__group.form__photo-upload
-              img.form__user-photo(src=`/img/users/${user.photo}`, alt=`User photo`)
-              a.btn-text(href="") Choose new photo
+              img.form__user-photo(
+                src=`/img/users/${user.photo}`,
+                alt="User photo"
+              )
+              input#photo.form__upload(
+                type="file",
+                accept="image/*",
+                name="photo"
+              )
+              label(for="photo") Choose new photo
             .form__group.right
               button.btn.btn--small.btn--green Save settings
         .line &nbsp;
@@ -104,4 +112,3 @@ block content
               )
             .form__group.right
               button.btn.btn--small.btn--green Save password
-
