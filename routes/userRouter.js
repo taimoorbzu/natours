@@ -1,4 +1,30 @@
 const express = require("express");
+const multer = require("multer");
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/img/users");
+  },
+  filename: (req, file, cb) => {
+    // e.g. image/jpeg -> jpg/jpeg, image/png -> png
+    const ext = file.mimetype.split("/")[1];
+    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Not an image! Please upload only images."), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
 const userRouter = express.Router();
 const {
   getAllUsers,
@@ -26,7 +52,7 @@ userRouter.post("/login", login);
 userRouter.get("/logout", logout);
 userRouter.patch("/reset-password/:token", resetPassword);
 userRouter.patch("/update-password", protectMiddleWare, updatePassword);
-userRouter.patch("/updateProfile", protectMiddleWare, updateUserProfile);
+userRouter.patch("/updateProfile", protectMiddleWare, upload.single('photo'), updateUserProfile);
 userRouter.delete("/deleteProfile", protectMiddleWare, deleteUserProfile);
 userRouter.post("/forget-password", forgetPassword);
 

@@ -18,6 +18,10 @@ export const updateSettings = async (data, type) => {
 
     if (res.data.status === 'success') {
       showAlert('success', `${type.toUpperCase()} updated successfully!`);
+      // To reload the current page with a 1 second timer
+      setTimeout(() => {
+        window.location.reload(true);
+      }, 1000);
     }
   } catch (err) {
     showAlert('error', err.response.data.message);
