@@ -2,6 +2,7 @@ const Tour = require("../models/TourModel.js");
 const APIFeatures = require("../utils/ApiFeatures.js");
 const catchAsync = require("../utils/catchAsync.js");
 const AppError = require("../utils/AppError.js");
+const upload = require('../utils/MulterUtil.js')
 
 //Middleware to get the top 5 cheapest tours
 const getCheapestRoutes = (req, res, next) => {
@@ -246,6 +247,40 @@ const getDistances = catchAsync(async (req, res, next) => {
   });
 });
 
+//Upload Tour Images using Multer upload middleware
+const uploadTourImages = upload.fields([{ name: 'imageCover', maxCount: 1 }, { name: 'images', maxCount: 3 }]);
+
+//Resize tour images using Sharp
+const resizeTourImages = catchAsync(async (req, res, next) => {
+  if (!req.files || (!req.files?.imageCover && !req.files?.images)) return next();
+
+  //Process image cover
+  if (req.files?.imageCover) {
+    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+    await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat('jpeg')
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/tours/${req.body.imageCover}`);
+  }
+  // Process tour images
+  if (req.files?.images) {
+    req.body.images = [];
+    await Promise.all(
+      req.files.images.map(async (file, i) => {
+        const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+        await sharp(file.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`public/img/tours/${filename}`);
+        req.body.images.push(filename);
+      })
+    );
+  }
+  next();
+})
+
 module.exports = {
   getAllTours,
   createTour,
@@ -257,4 +292,6 @@ module.exports = {
   getMonthlyPlan,
   getToursWithin,
   getDistances,
+  uploadTourImages,
+  resizeTourImages
 };

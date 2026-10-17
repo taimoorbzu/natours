@@ -10,6 +10,8 @@ const {
   getMonthlyPlan,
   getToursWithin,
   getDistances,
+  uploadTourImages,
+  resizeTourImages
 } = require("../controllers/tourController");
 const {
   protectMiddleWare,
@@ -37,7 +39,7 @@ tourRouter
 tourRouter
   .route("/:id")
   .get(getTourById)
-  .patch(protectMiddleWare, CheckUserrRole("admin", "lead-guide"), updateTour)
+  .patch(protectMiddleWare, CheckUserrRole("admin", "lead-guide"), uploadTourImages, resizeTourImages, updateTour)
   .delete(protectMiddleWare, CheckUserrRole("admin", "lead-guide"), deleteTour);
 
 //Nested Routes
