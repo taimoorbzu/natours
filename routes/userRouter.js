@@ -1,16 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 
-const multerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/img/users");
-  },
-  filename: (req, file, cb) => {
-    // e.g. image/jpeg -> jpg/jpeg, image/png -> png
-    const ext = file.mimetype.split("/")[1];
-    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-  },
-});
+const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
