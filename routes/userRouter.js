@@ -32,6 +32,7 @@ const {
   updateUser,
   deleteUser,
   createUser,
+  resizeUserPhoto
 } = require("../controllers/userController");
 const {
   signUp,
@@ -52,7 +53,7 @@ userRouter.post("/login", login);
 userRouter.get("/logout", logout);
 userRouter.patch("/reset-password/:token", resetPassword);
 userRouter.patch("/update-password", protectMiddleWare, updatePassword);
-userRouter.patch("/updateProfile", protectMiddleWare, upload.single('photo'), updateUserProfile);
+userRouter.patch("/updateProfile", protectMiddleWare, upload.single('photo'), resizeUserPhoto, updateUserProfile);
 userRouter.delete("/deleteProfile", protectMiddleWare, deleteUserProfile);
 userRouter.post("/forget-password", forgetPassword);
 
