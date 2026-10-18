@@ -39,6 +39,7 @@
     "pug": "^3.0.4",
     "sharp": "^0.35.5",
     "slugify": "^1.6.9",
+    "stripe": "^23.0.0",
     "superagent": "^10.3.0",
     "swagger-ui-express": "^5.0.1",
     "validator": "^13.15.35",

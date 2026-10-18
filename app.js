@@ -19,6 +19,7 @@ const { setupSwagger } = require("./swagger/swagger.js");
 const path = require("path");
 const pug = require('pug');
 const { title } = require("process");
+const bookingRouter = require("./routes/bookingRouter.js");
 
 dotenv.config();
 
@@ -73,6 +74,7 @@ app.use((req, res, next) => {
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/bookings", bookingRouter);
 
 //Routes for User Interface
 app.use('/', viewRouter)
