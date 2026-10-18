@@ -4,7 +4,7 @@ const AppError = require("../utils/AppError.js");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 const crypto = require("crypto");
-const sendEmail = require("../utils/Email.js");
+const Email = require("../utils/Email.js");
 const fs = require("fs");
 const path = require("path");
 
@@ -61,6 +61,10 @@ const signUp = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordconfirm: req.body.passwordconfirm,
   });
+
+  const url = `${req.protocol}://${req.get("host")}/me`;
+  await new Email(newUser, url).sendWelcome();
+
   createSendToken(newUser, 201, res);
 });
 
