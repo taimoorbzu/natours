@@ -41,3 +41,20 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     });
 });
 
+const Booking = require("../models/BookingModel");
+
+// Middleware to create booking when user redirects back from Stripe checkout
+exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+    // This is temporary because it's unsecure: anyone can make bookings without paying if they know this URL pattern
+    // (In production, webhooks are used instead)
+    const { tour, user, price } = req.query;
+
+    if (!tour || !user || !price) return next();
+
+    await Booking.create({ tour, user, price });
+
+    // Redirect to root URL without query string so users cannot bookmark or re-trigger booking creation
+    res.redirect(req.originalUrl.split('?')[0]);
+});
+
+

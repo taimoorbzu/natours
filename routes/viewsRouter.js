@@ -4,17 +4,20 @@ const {
   getTour,
   Login,
   getUser,
-  getSignup
+  getSignup,
+  getMyTours
 } = require("../controllers/viewsController.js");
 const { isLoggedIn, protectMiddleWare } = require("../controllers/authController.js");
+const { createBookingCheckout } = require("../controllers/bookingController.js");
 
 const router = express.Router();
 
-router.get("/", isLoggedIn, getOverview);
+router.get("/", createBookingCheckout, isLoggedIn, getOverview);
 router.get("/tour/:slug", isLoggedIn, getTour);
 router.get("/login", isLoggedIn, Login);
+router.get("/signup", isLoggedIn, getSignup);
 router.get("/me", protectMiddleWare, getUser);
-router.get('/signup', isLoggedIn, getSignup);
-
+router.get("/my-tours", protectMiddleWare, getMyTours);
 
 module.exports = router;
+

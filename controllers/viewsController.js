@@ -49,11 +49,25 @@ const getSignup = (req, res) => {
   });
 };
 
+const getMyTours = catchAsync(async (req, res, next) => {
+  // 1) Find user and populate virtual bookings
+  const user = await User.findById(req.user.id).populate('bookings');
+
+  // 2) Extract the tour objects from each booking
+  const tours = user.bookings ? user.bookings.map(el => el.tour) : [];
+
+  // 3) Render overview page with booked tours
+  res.status(200).render('overview', {
+    title: 'My Booked Tours',
+    tours,
+  });
+});
 
 module.exports = {
   getOverview,
   getTour,
   Login,
   getUser,
-  getSignup
+  getSignup,
+  getMyTours
 };
