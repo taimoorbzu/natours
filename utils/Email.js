@@ -13,7 +13,15 @@ class Email {
 
     newTransporter() {
         if (process.env.NODE_ENV === "production") {
-            //create a transporter for sendgrid
+            // Brevo (Sendinblue) SMTP Transporter
+            return nodemailer.createTransport({
+                host: process.env.BREVO_HOST || "smtp-relay.brevo.com",
+                port: process.env.BREVO_PORT || 587,
+                auth: {
+                    user: process.env.BREVO_USERNAME,
+                    pass: process.env.BREVO_PASSWORD
+                }
+            });
         }
 
         return nodemailer.createTransport({

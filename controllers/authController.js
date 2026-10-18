@@ -14,7 +14,7 @@ const signToken = (id) => {
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
   //Set the cookie option
@@ -28,7 +28,10 @@ const createSendToken = (user, statusCode, res) => {
 
   // Only send over HTTPS in production
   if (process.env.NODE_ENV === "production") {
-    cookieOptions.secure = true;
+    // cookieOptions.secure = true;
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+      cookieOptions.secure = true;
+    }
   }
 
   res.cookie("jwt", token, cookieOptions);
@@ -65,7 +68,7 @@ const signUp = catchAsync(async (req, res, next) => {
   const url = `${req.protocol}://${req.get("host")}/me`;
   await new Email(newUser, url).sendWelcome();
 
-  createSendToken(newUser, 201, res);
+  createSendToken(newUser, 201, req, res);
 });
 
 const login = catchAsync(async (req, res, next) => {
@@ -86,7 +89,7 @@ const login = catchAsync(async (req, res, next) => {
   // user.password = undefined;
 
   //If Every thing is well generate the JSON WEB TOKEN AND SEND IT TO THE CLIENT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 const logout = catchAsync(async function (req, res, next) {
@@ -238,7 +241,7 @@ const resetPassword = catchAsync(async function (req, res, next) {
   await user.save();
 
   // 5. Log user in automatically
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 const updatePassword = catchAsync(async (req, res, next) => {
@@ -262,7 +265,7 @@ const updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   //send back the response with the JWT token also hides the passwords fields
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 const updateUserProfile = catchAsync(async (req, res, next) => {
