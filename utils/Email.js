@@ -15,12 +15,18 @@ class Email {
         if (process.env.NODE_ENV === "production") {
             // Brevo (Sendinblue) SMTP Transporter
             return nodemailer.createTransport({
-                host: process.env.BREVO_HOST || "smtp-relay.brevo.com",
-                port: process.env.BREVO_PORT || 587,
+                host: process.env.BREVO_HOST || "172.246.243.66",
+                port: Number(process.env.BREVO_PORT) || 587,
+                tls: {
+                    servername: "smtp-relay.brevo.com"
+                },
                 auth: {
                     user: process.env.BREVO_USERNAME,
                     pass: process.env.BREVO_PASSWORD
-                }
+                },
+                connectionTimeout: 10000,
+                greetingTimeout: 10000,
+                socketTimeout: 10000
             });
         }
 
