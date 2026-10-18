@@ -121,22 +121,9 @@ const forgetPassword = catchAsync(async function (req, res, next) {
   // 4. Construct the reset URL and remember to send the normal token to client not the hashed one
   const resetURL = `${req.protocol}://${req.get("host")}/api/v1/users/reset-password/${resetToken}`;
 
-  // 5. Load template and replace placeholders
-  const templatePath = path.join(__dirname, "../templates/passwordReset.html");
-  let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
-  htmlTemplate = htmlTemplate
-    .replace("{{NAME}}", user.name)
-    .replace("{{RESET_URL}}", resetURL);
-  const message = `Forgot your password? Submit a PATCH request with your new password to: ${resetURL}\nIf you didn't forget your password, please ignore this email.`;
-
-  // 5. Send the email
+  // 5. Send the Pug password reset email
   try {
-    await sendEmail({
-      email: user.email,
-      subject: "Your password reset token (valid for 10 min)",
-      message: message,
-      html: htmlTemplate,
-    });
+    await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
       status: "success",
