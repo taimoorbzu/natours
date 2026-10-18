@@ -1,10 +1,15 @@
 const express = require("express");
+const dotenv = require("dotenv");
+
+// Load environment variables before any controllers or routes run
+dotenv.config();
+
 const cors = require("cors");
 const morgan = require("morgan");
-const dotenv = require("dotenv");
 const tourRouter = require("./routes/tourRouter.js");
 const userRouter = require("./routes/userRouter.js");
-const viewRouter = require('./routes/viewsRouter.js')
+const viewRouter = require('./routes/viewsRouter.js');
+const bookingRouter = require("./routes/bookingRouter.js");
 const { renderVisualizerHtml } = require("./utils/routeVisualizer.js");
 const AppError = require("./utils/AppError.js");
 const GlobalErrorhandler = require("./utils/global-error-handler.js");
@@ -19,9 +24,6 @@ const { setupSwagger } = require("./swagger/swagger.js");
 const path = require("path");
 const pug = require('pug');
 const { title } = require("process");
-const bookingRouter = require("./routes/bookingRouter.js");
-
-dotenv.config();
 
 const app = express();
 app.set('view engine', 'pug');
