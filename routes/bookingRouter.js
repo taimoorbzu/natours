@@ -31,4 +31,4 @@ router
     .patch(updateBooking)
     .delete(deleteBooking);
 
-module.exports = router;
+module.exports = router;
