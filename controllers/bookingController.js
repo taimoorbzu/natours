@@ -1,9 +1,10 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const Tour = require("../models/TourModel");
+const Booking = require("../models/BookingModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-// Get CheckOut Session
+// 1) Get CheckOut Session
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     // 1) Get the currently booked tour
     const tour = await Tour.findById(req.params.tourId);
@@ -41,9 +42,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     });
 });
 
-const Booking = require("../models/BookingModel");
-
-// Middleware to create booking when user redirects back from Stripe checkout
+// 2) Middleware to create booking when user redirects back from Stripe checkout
 exports.createBookingCheckout = catchAsync(async (req, res, next) => {
     // This is temporary because it's unsecure: anyone can make bookings without paying if they know this URL pattern
     // (In production, webhooks are used instead)
@@ -56,5 +55,82 @@ exports.createBookingCheckout = catchAsync(async (req, res, next) => {
     // Redirect to root URL without query string so users cannot bookmark or re-trigger booking creation
     res.redirect(req.originalUrl.split('?')[0]);
 });
+
+// 3) CRUD Operations for Bookings
+
+// GET ALL BOOKINGS
+exports.getAllBookings = catchAsync(async (req, res, next) => {
+    const bookings = await Booking.find();
+
+    res.status(200).json({
+        status: "success",
+        results: bookings.length,
+        data: {
+            bookings,
+        },
+    });
+});
+
+// GET SINGLE BOOKING
+exports.getBooking = catchAsync(async (req, res, next) => {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+        return next(new AppError(404, "No booking found with that ID"));
+    }
+
+    res.status(200).json({
+        status: "success",
+        data: {
+            booking,
+        },
+    });
+});
+
+// CREATE BOOKING (Manually by Admin/Lead-Guide)
+exports.createBooking = catchAsync(async (req, res, next) => {
+    const newBooking = await Booking.create(req.body);
+
+    res.status(201).json({
+        status: "success",
+        data: {
+            booking: newBooking,
+        },
+    });
+});
+
+// UPDATE BOOKING
+exports.updateBooking = catchAsync(async (req, res, next) => {
+    const booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true,
+    });
+
+    if (!booking) {
+        return next(new AppError(404, "No booking found with that ID"));
+    }
+
+    res.status(200).json({
+        status: "success",
+        data: {
+            booking,
+        },
+    });
+});
+
+// DELETE BOOKING
+exports.deleteBooking = catchAsync(async (req, res, next) => {
+    const booking = await Booking.findByIdAndDelete(req.params.id);
+
+    if (!booking) {
+        return next(new AppError(404, "No booking found with that ID"));
+    }
+
+    res.status(204).json({
+        status: "success",
+        data: null,
+    });
+});
+
 
 
