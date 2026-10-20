@@ -1,4 +1,8 @@
 node_modules/
 .env
 .*env
+# Ignore dynamically uploaded user photos, but keep starter demo avatars and default.jpg
+public/img/users/user-*.*
+!public/img/users/user-[0-9]*.jpg
+!public/img/users/default.jpg
 
