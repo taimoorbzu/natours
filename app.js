@@ -24,6 +24,7 @@ const { setupSwagger } = require("./swagger/swagger.js");
 const path = require("path");
 const pug = require('pug');
 const { title } = require("process");
+const compression = require('compression')
 
 const app = express();
 app.set('view engine', 'pug');
@@ -41,6 +42,8 @@ app.use(
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+app.enable('trust proxy');
 
 // 3. Rate limiting for API requests
 const limiter = rateLimit({
@@ -64,6 +67,8 @@ app.use(express.static(`${__dirname}/public`));
 
 // Swagger API Documentation (available at /api-docs and /docs)
 setupSwagger(app);
+
+app.use(compression());
 
 // Custom timestamp middleware
 app.use((req, res, next) => {
