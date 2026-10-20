@@ -6,3 +6,5 @@ public/img/users/user-*.*
 !public/img/users/user-[0-9]*.jpg
 !public/img/users/default.jpg
 
+# Ignore personal document notes
+*.docx
