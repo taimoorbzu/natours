@@ -21,8 +21,6 @@ mongoose
 
 const server = app.listen(PORT, () => {
   console.log(`API is running at http://localhost:${PORT}`);
-  console.log(`Swagger API Docs: http://localhost:${PORT}/api-docs`);
-  // console.log(`Interactive Route & Middleware Visualizer Dashboard: http://localhost:${PORT}/routes`);
 });
 
 process.on("unhandledRejection", (error) => {
@@ -31,19 +29,3 @@ process.on("unhandledRejection", (error) => {
     process.exit(1);
   });
 });
-
-// process.on('SIGTERM', () => {
-//     console.log('SIGTERM received, shutting down gracefully');
-//     server.close(() => {
-//         console.log('Process terminated');
-//         process.exit(0);
-//     });
-// });
-
-// process.on('SIGINT', () => {
-//     console.log('SIGINT received, shutting down gracefully');
-//     server.close(() => {
-//         console.log('Process terminated');
-//         process.exit(0);
-//     });
-// });
