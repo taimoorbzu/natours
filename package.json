@@ -4,8 +4,9 @@
   "description": "A Node.js API for the Nators application",
   "main": "server.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node server.js",
-    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start": "node server.js",
+    "start:prod": "cross-env NODE_ENV=production node server.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon server.js",
     "data:import": "node utils/import-dev-data.js --import",
     "data:delete": "node utils/import-dev-data.js --delete",
     "watch:js": "esbuild ./public/js/index.js --bundle --outfile=./public/js/bundle.js --watch",
@@ -53,5 +54,8 @@
     "express-middleware-visualizer": "^0.1.3",
     "parcel": "^2.16.4",
     "prettier": "^3.9.10"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
