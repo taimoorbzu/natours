@@ -70,13 +70,25 @@ if (bookBtn)
 
 
 if (signupForm) {
-  signupForm.addEventListener('submit', e => {
+  signupForm.addEventListener('submit', async e => {
     e.preventDefault();
+    const btn = signupForm.querySelector('button');
+    if (btn) {
+      btn.textContent = 'Creating account...';
+      btn.disabled = true;
+    }
+
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const passwordconfirm = document.getElementById('passwordConfirm').value;
-    signup(name, email, password, passwordconfirm);
+    
+    await signup(name, email, password, passwordconfirm);
+
+    if (btn) {
+      btn.textContent = 'Sign up';
+      btn.disabled = false;
+    }
   });
 }
 const alertMessage = document.querySelector('body').dataset.alert;

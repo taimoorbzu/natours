@@ -65,14 +65,13 @@ const signUp = catchAsync(async (req, res, next) => {
     passwordconfirm: req.body.passwordconfirm,
   });
 
-  try {
-    const url = `${req.protocol}://${req.get("host")}/me`;
-    await new Email(newUser, url).sendWelcome();
-  } catch (err) {
-    console.error("Failed to send welcome email:", err);
-  }
-
   createSendToken(newUser, 201, req, res);
+
+  // Send email in background asynchronously so it does not block the user response
+  const url = `${req.protocol}://${req.get("host")}/me`;
+  new Email(newUser, url).sendWelcome().catch(err => {
+    console.error("Failed to send welcome email in background:", err);
+  });
 });
 
 const login = catchAsync(async (req, res, next) => {
