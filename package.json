@@ -10,7 +10,8 @@
     "data:import": "node utils/import-dev-data.js --import",
     "data:delete": "node utils/import-dev-data.js --delete",
     "watch:js": "esbuild ./public/js/index.js --bundle --outfile=./public/js/bundle.js --watch",
-    "build:js": "esbuild ./public/js/index.js --bundle --outfile=./public/js/bundle.js --minify"
+    "build:js": "esbuild ./public/js/index.js --bundle --outfile=./public/js/bundle.js --minify",
+    "heroku-postbuild": "npm run build:js"
   },
   "keywords": [],
   "author": "",
