@@ -65,8 +65,12 @@ const signUp = catchAsync(async (req, res, next) => {
     passwordconfirm: req.body.passwordconfirm,
   });
 
-  const url = `${req.protocol}://${req.get("host")}/me`;
-  await new Email(newUser, url).sendWelcome();
+  try {
+    const url = `${req.protocol}://${req.get("host")}/me`;
+    await new Email(newUser, url).sendWelcome();
+  } catch (err) {
+    console.error("Failed to send welcome email:", err);
+  }
 
   createSendToken(newUser, 201, req, res);
 });
