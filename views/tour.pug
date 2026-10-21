@@ -53,8 +53,9 @@ block content
 
           each guide in tour.guides
             .overview-box__detail
+              - const guidePhoto = guide.photo && guide.photo.startsWith('http') ? guide.photo : `/img/users/${guide.photo}`
               img.overview-box__img(
-                src=`/img/users/${guide.photo}`,
+                src=guidePhoto,
                 alt=`${guide.name}`
               )
               - if (guide.role === "lead-guide")

@@ -70,8 +70,9 @@ block content
                 required
               )
             .form__group.form__photo-upload
+              - const userPhoto = user.photo && user.photo.startsWith('http') ? user.photo : `/img/users/${user.photo}`
               img.form__user-photo(
-                src=`/img/users/${user.photo}`,
+                src=userPhoto,
                 alt="User photo"
               )
               input#photo.form__upload(

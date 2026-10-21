@@ -2,6 +2,7 @@ const User = require('../models/userModel.js');
 const catchAsync = require('../utils/catchAsync.js');
 const AppError = require('../utils/AppError.js');
 const sharp = require('sharp');
+const cloudinary = require('../utils/cloudinary.js');
 
 const getAllUsers = catchAsync(async (req, res, next) => {
     const users = await User.find();
@@ -74,12 +75,31 @@ const deleteUser = catchAsync(async (req, res, next) => {
 
 const resizeUserPhoto = catchAsync(async (req, res, next) => {
     if (!req.file) return next();
-    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-    await sharp(req.file.buffer)
+    const buffer = await sharp(req.file.buffer)
         .resize(500, 500)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
-        .toFile(`public/img/users/${req.file.filename}`);
+        .toBuffer();
+
+    //upload the buffer directly to Cloudinary
+    await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'natours/users',
+                public_id: `user-${req.user.id}-${Date.now()}`
+            },
+            (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    req.file.filename = result.secure_url;
+                    resolve(result);
+                }
+            }
+        );
+        uploadStream.end(buffer);
+    });
+
     next();
 
 });
