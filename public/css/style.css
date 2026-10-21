@@ -1323,3 +1323,252 @@ body {
   -webkit-transform: translateY(-2px);
   transform: translateY(-2px);
 }
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (TABLETS & MOBILE SCREENS)
+   ========================================================================== */
+
+/* 1. Tablet Landscape & Medium Desktops (<= 1200px / 75em) */
+@media only screen and (max-width: 75em) {
+  html {
+    font-size: 56.25%; /* 1rem = 9px */
+  }
+
+  .card-container {
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 5rem;
+    padding: 0 2rem;
+  }
+
+  .header {
+    padding: 0 3rem;
+  }
+}
+
+/* 2. Tablet Portrait (<= 900px / 56.25em) */
+@media only screen and (max-width: 56.25em) {
+  html {
+    font-size: 50%; /* 1rem = 8px */
+  }
+
+  body {
+    padding: 0; /* Remove body border padding on mobile */
+  }
+
+  .main {
+    padding: 5rem 3rem;
+  }
+
+  /* Header */
+  .header {
+    flex-direction: column;
+    height: auto;
+    padding: 2rem 2rem;
+    gap: 1.5rem;
+  }
+
+  .header__logo {
+    order: -1;
+    margin-bottom: 0.5rem;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav--tours {
+    justify-content: center;
+  }
+
+  .nav--user {
+    justify-content: center;
+  }
+
+  /* Tour Detail Header */
+  .heading-primary {
+    width: 90%;
+    font-size: 4rem;
+  }
+
+  .heading-box {
+    top: 40%;
+  }
+
+  .heading-box__group {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .heading-box__detail:not(:last-child) {
+    margin-right: 0;
+  }
+
+  /* Tour Description & Overview Section */
+  .section-description {
+    flex-direction: column;
+  }
+
+  .section-description > * {
+    flex: 0 0 100%;
+    padding: 6rem 5rem;
+  }
+
+  .description-box .description {
+    margin-right: 0;
+  }
+
+  /* User Account View (/me) */
+  .user-view {
+    flex-direction: column;
+    border-radius: 0;
+  }
+
+  .user-view__menu {
+    flex: auto;
+    padding: 2.5rem 0;
+  }
+
+  .side-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .side-nav li {
+    margin: 0.5rem 1rem;
+    border-left: none !important;
+    border-bottom: 3px solid transparent;
+  }
+
+  .side-nav--active,
+  .side-nav li:hover {
+    border-left: none !important;
+    border-bottom: 3px solid #fff !important;
+  }
+
+  .side-nav a:link,
+  .side-nav a:visited {
+    padding: 1rem 1.5rem;
+    font-size: 1.3rem;
+  }
+
+  .admin-nav {
+    margin-top: 2rem;
+  }
+
+  .admin-nav__heading {
+    text-align: center;
+    margin: 0 2rem 1rem 2rem;
+  }
+
+  .user-view__content {
+    padding: 4rem 2rem;
+  }
+
+  .user-view__form-container {
+    padding: 0 2rem;
+  }
+
+  /* Tour CTA Banner */
+  .cta {
+    padding: 5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .cta__img {
+    display: none; /* Hide absolute decorative overlapping circles on smaller viewports */
+  }
+
+  .cta__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .cta__btn {
+    margin-top: 1.5rem;
+  }
+}
+
+/* 3. Mobile Phones (<= 600px / 37.5em) */
+@media only screen and (max-width: 37.5em) {
+  html {
+    font-size: 45%; /* Scales entire rem-based design down cleanly */
+  }
+
+  .main {
+    padding: 3rem 1.5rem;
+  }
+
+  /* Single Column Card Grid */
+  .card-container {
+    grid-template-columns: 1fr;
+    max-width: 45rem;
+    grid-gap: 4rem;
+    padding: 0 1rem;
+  }
+
+  /* Login & Signup Form */
+  .login-form {
+    padding: 4rem 2.5rem;
+    border-radius: 8px;
+    width: 100%;
+  }
+
+  .heading-secondary {
+    font-size: 1.9rem;
+  }
+
+  /* Tour Detail Sections */
+  .section-pictures {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .picture-box__img {
+    height: 30rem;
+  }
+
+  .section-description > * {
+    padding: 4rem 2.5rem;
+  }
+
+  /* Reviews Slider */
+  .reviews {
+    padding: 3rem 1.5rem;
+    grid-column-gap: 2.5rem;
+  }
+
+  .reviews__card {
+    width: 26rem;
+    padding: 2.5rem;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 4rem 2rem 2rem 2rem;
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .footer__nav {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer__nav li {
+    margin: 0 0.75rem;
+  }
+
+  .footer__copyright {
+    justify-self: center;
+  }
+}
+
